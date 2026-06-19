@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,700;0,800;1,300;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@1,400;1,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #FFFDE8;
+  --pink: #FF9899;
+  --pink-light: #FDC9C6;
+  --blue: #66D2FF;
+  --yellow: #FEEE74;
+  --ink: #1A1A1A;
+  --ink-2: #444444;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--paper);
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Textura de ruido global sutil (estilo risograph/sketchbook) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.65;
+}
+
+/* Efecto de desajuste de registro (riso misregister offset) para elementos hover */
+.riso-misregister-hover {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+/* Animación de sacudida (shake) para estados de error en inputs */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-6px); }
+  30%, 60%, 90% { transform: translateX(6px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Transición de grid-template-rows para acordeón fluido del formulario */
+.transition-grid-rows {
+  transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fade in con scroll a través de Intersection Observer */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-in-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animación de entrada de los bowls (staggered bounce) */
+@keyframes bowlBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scaleY(0.7) scaleX(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-10px) scaleY(1.08) scaleX(1.02);
+  }
+  80% {
+    transform: translateY(4px) scaleY(0.96) scaleX(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1) scaleX(1);
+  }
+}
+.animate-bowl-bounce {
+  opacity: 0;
+  transform-origin: bottom center;
+  animation: bowlBounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Animación de entrada para el avatar (Fase 2) */
+@keyframes avatarFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-avatar {
+  animation: avatarFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Animación de entrada para las decoraciones del avatar (Fase 2) */
+@keyframes decoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-deco {
+  opacity: 0;
+  animation: decoFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
