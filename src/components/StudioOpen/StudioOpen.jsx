@@ -3,9 +3,12 @@ import { studioCopy } from '../../data/studioCopy';
 import { flowQuestions, mainActions, workAreas } from '../../data/studioOptions';
 import { sendStudioLead } from '../../services/sendStudioLead';
 import { validateAttachment, validateEmail, validateMessage, validateName } from '../../utils/studioValidation';
-import StudioIcon from './StudioIcon';
 import StudioHeader from './StudioHeader';
 import StudioLauncher from './StudioLauncher';
+import StudioHome from './StudioHome';
+import StudioFlowScreen from './StudioFlowScreen';
+import StudioSymbol from './StudioSymbol';
+import PanelHeading from './PanelHeading';
 import './StudioOpen.css';
 
 const STUDIO_SCREENS = {
@@ -42,111 +45,12 @@ const screenHeader = {
   [STUDIO_SCREENS.ERROR]: { title: 'No se pudo enviar', subtitle: 'Intenta otra vez' },
 };
 
-const studioSymbols = {
-  briefcase: '💼',
-  bulb: '💡',
-  laptop: '💻',
-  handshake: '🤝',
-  sparkles: '✨',
-  robot: '🤖',
-  memo: '📝',
-  compass: '🧭',
-  paperclip: '📎',
-  mail: '✉️',
-  check: '✅',
-  alert: '⚠️',
-  down: '📁',
-};
-
 const initialLead = {
   name: '',
   message: '',
   email: '',
   attachment: null,
 };
-
-function StudioSymbol({ name }) {
-  return (
-    <span className="studio-open__symbol" aria-hidden="true">
-      {studioSymbols[name] || '✦'}
-    </span>
-  );
-}
-
-function ActionRow({ action, onClick }) {
-  return (
-    <button className="studio-open__action-row" type="button" onClick={onClick}>
-      <span className="studio-open__row-icon"><StudioSymbol name={action.icon} /></span>
-      <span className="studio-open__row-text">
-        <strong>{action.title}</strong>
-        <span>{action.description}</span>
-      </span>
-      <span className="studio-open__chevron"><StudioIcon name="chevron" /></span>
-    </button>
-  );
-}
-
-function ProjectsButton({ onClick }) {
-  return (
-    <button className="studio-open__projects-link" type="button" onClick={onClick}>
-      <span>
-        <strong>{studioCopy.home.projectsTitle}</strong>
-        <span>{studioCopy.home.projectsDescription}</span>
-      </span>
-      <StudioIcon name="down" />
-    </button>
-  );
-}
-
-function StudioHome({ onSelectFlow, onProjectsClick }) {
-  return (
-    <div className="studio-open__screen">
-      <div className="studio-open__thread">
-        <div className="studio-open__message studio-open__message--assistant">
-          <div className="studio-open__avatar-shell" aria-hidden="true">
-            <div className="studio-open__avatar-placeholder">
-              <span />
-            </div>
-          </div>
-          <div>
-            <p className="studio-open__author">Estudio Abierto</p>
-            <div className="studio-open__bubble studio-open__bubble--assistant">
-              <h2>{studioCopy.home.assistantTitle}</h2>
-              <p>{studioCopy.home.assistantText}</p>
-            </div>
-          </div>
-        </div>
-        <div className="studio-open__message studio-open__message--user">
-          <div className="studio-open__bubble studio-open__bubble--user">{studioCopy.home.userQuestion}</div>
-        </div>
-      </div>
-
-      <div className="studio-open__action-list" aria-label="Opciones principales">
-        {mainActions.map((action) => (
-          <ActionRow
-            key={action.id}
-            action={action}
-            onClick={() => onSelectFlow(action.id, action.screen)}
-          />
-        ))}
-      </div>
-
-      <ProjectsButton onClick={onProjectsClick} />
-    </div>
-  );
-}
-
-function PanelHeading({ icon, title, description }) {
-  return (
-    <div className="studio-open__heading">
-      <div className="studio-open__heading-row">
-        <span className="studio-open__heading-icon"><StudioSymbol name={icon} /></span>
-        <h2>{title}</h2>
-      </div>
-      <p>{description}</p>
-    </div>
-  );
-}
 
 function StudioAreas({ onNext, onProjectsClick }) {
   return (
@@ -173,44 +77,6 @@ function StudioAreas({ onNext, onProjectsClick }) {
           Siguiente paso
         </button>
       </div>
-    </div>
-  );
-}
-
-function StudioFlowScreen({ title, description, icon, questions, selectedOptions, onSelectOption, onNext }) {
-  return (
-    <div className="studio-open__screen">
-      <PanelHeading icon={icon} title={title} description={description} />
-      <div className="studio-open__question-list">
-        {questions.map((group) => (
-          <div className="studio-open__question-block" key={group.id}>
-            <div className="studio-open__question-title">
-              <StudioSymbol name={group.icon} />
-              {group.question}
-            </div>
-            <div className="studio-open__chip-grid">
-              {group.options.map((option) => {
-                const isSelected = selectedOptions[group.id] === option;
-                return (
-                  <button
-                    className={`studio-open__chip${isSelected ? ' is-selected' : ''}`}
-                    type="button"
-                    key={option}
-                    aria-pressed={isSelected}
-                    onClick={() => onSelectOption(group.id, option)}
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-      <button className="studio-open__btn studio-open__btn--primary studio-open__btn--full" type="button" onClick={onNext}>
-        <StudioSymbol name="sparkles" />
-        Continuar
-      </button>
     </div>
   );
 }
