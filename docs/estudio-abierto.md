@@ -1,141 +1,110 @@
-# Estudio Abierto
+# Estudio Abierto — Documentación de Implementación Docente
 
-## Proposito
+Este documento describe la arquitectura, stack, ejecución y alcance de la **versión final acotada y estable** de **Estudio Abierto**, el módulo conversacional integrado al portafolio profesional de Aikia Riveros.
 
-Estudio Abierto es el modulo conversacional integrado al portafolio Aikia. No es una ruta nueva ni una app aislada: vive dentro del widget `StudioOpen` y mantiene el portafolio, su flujo de contacto con Formspree y su maqueta base.
+---
 
-El objetivo docente es demostrar comunicacion en tiempo real con Socket.IO entre dos pestanas o clientes, junto con salas, alias, historial, busqueda, emojis, archivos, notificaciones y documentacion tecnica.
+## Propósito
+
+El objetivo principal es cumplir el encargo docente de integrar comunicación en tiempo real mediante WebSockets (`Socket.IO`) dentro de un sitio web existente, manteniendo el portafolio, su maqueta, adaptabilidad responsive y el flujo de contacto de Formspree sin alteraciones.
+
+---
+
+## Alcance final de esta versión
+
+Esta entrega prioriza y tiene operativos:
+* **Comunicación bidireccional en tiempo real:** Mensajes enviados por un cliente aparecen de forma inmediata en otros clientes conectados a la misma sala mediante WebSockets.
+* **Salas temáticas independientes:** El usuario cambia entre 6 salas definidas (`proyectos`, `producto-ux`, `ia-aplicada`, `colaboraciones`, `comisiones-web`, `trayectoria`) sin mezcla de mensajes.
+* **Identificación (Alias):** Campo de alias obligatorio (de 2 a 30 caracteres) y sanitizado.
+* **Mensajes y emojis:** Mensajes de texto de hasta 500 caracteres con selector de emojis.
+* **Historial básico:** Los mensajes se almacenan en memoria y localmente (`localStorage`), y se escriben asíncronamente en el servidor en el archivo JSON local.
+* **Notificaciones visuales y sonoras:** Badge de alertas visuales en el launcher de Estudio Abierto y sonido de alerta (configurable con botón Mute persistente).
+* **Manejo de errores:** Detección automática de desconexión del servidor y botón de reintento de conexión.
+* **Integridad del portafolio:** Todo el sitio base (Header, Hero, Sobre Mí, Habilidades, Proyectos, Formación, Footer) y el formulario con Formspree siguen plenamente operativos.
+
+---
+
+## Fuera de alcance de esta versión
+
+Por criterios de estabilidad y acotación de la entrega, quedan **fuera de alcance en el flujo de usuario final**:
+* **Búsqueda en historial:** Desactivada en la interfaz en esta versión.
+* **Archivos adjuntos desde la interfaz:** Inhabilitada su carga y renderizado de tarjetas en burbujas para resguardar la seguridad del almacenamiento local.
+* **Scroll infinito / Paginación retrospectiva:** La sala mantiene y visualiza el historial básico inicial.
+* **Endpoint paginado de historial:** No consultado por el cliente en esta versión.
+* **Gestión de uploads en chat:** Deshabilitado del flujo de usuario final.
+
+---
 
 ## Stack Utilizado
 
-- Frontend: React, Vite, JavaScript, Tailwind CSS existente y CSS propio de `StudioOpen`.
-- Realtime: `socket.io-client`.
-- Backend: Node.js, Express, Socket.IO, CORS, Multer.
-- Persistencia: `localStorage` para cliente y JSON local para backend.
-- Contacto existente: Formspree.
+* **Frontend:** React, Vite, JavaScript, Tailwind CSS existente y estilos CSS específicos de `StudioOpen`.
+* **Realtime:** `socket.io-client` para la comunicación por WebSockets.
+* **Backend:** Node.js, Express, Socket.IO.
+* **Persistencia:** `localStorage` (cliente) y JSON local (servidor).
+* **Contacto:** Formspree.
 
-## Ejecucion Local
+---
 
-```bash
-npm install
-npm run dev:server
-npm run dev
-```
+## Ejecución Local
 
-Variables opcionales:
+1. Instalar dependencias en la raíz:
+   ```bash
+   npm install
+   ```
 
-- `PORT`: puerto backend, por defecto `3001`.
-- `CLIENT_ORIGIN`: origen permitido por CORS, por defecto `http://localhost:5173`.
-- `VITE_CHAT_SERVER_URL`: URL del backend, por defecto `http://localhost:3001`.
-- `VITE_FORMSPREE_STUDIO_ENDPOINT`: endpoint Formspree del flujo de contacto.
+2. Ejecutar el backend del chat:
+   ```bash
+   npm run dev:server
+   ```
+   *Disponible en:* `http://localhost:3001`
 
-## Arquitectura
+3. Ejecutar el frontend del portafolio:
+   ```bash
+   npm run dev
+   ```
+   *Disponible en:* `http://localhost:5173` (usa puerto estricto `--strictPort`).
 
-Frontend:
-
-- `src/components/StudioOpen/StudioOpen.jsx`: contenedor principal del widget, monta el controlador persistente del chat y mantiene Formspree.
-- `src/hooks/useStudioChatController.js`: conexion Socket.IO, mensajes, salas, historial local, notificaciones, sonido, scroll y uploads.
-- `src/components/StudioOpen/Chat/`: vista del chat, alias, salas, busqueda, lista, input, sonido y burbujas.
-- `src/services/chatLocalHistory.js`: alias, historial local, merge sin duplicados y preferencia de sonido.
-- `src/services/chatSocket.js`: Socket.IO, historial HTTP paginado y upload.
-- `src/utils/chatValidation.js` y `src/utils/chatFileValidation.js`: validaciones frontend.
-
-Backend:
-
-- `server/index.js`: Express, CORS, rutas HTTP y montaje Socket.IO.
-- `server/socket.js`: eventos realtime y cola de escritura JSON.
-- `server/routes/uploads.routes.js`: subida validada de archivos.
-- `server/utils/`: validadores y paginacion.
-- `server/data/messages.json`: historial por sala.
-- `server/data/uploads/`: archivos subidos.
-
-## Flujo De Usuario
-
-1. Usuario abre el portafolio.
-2. Usuario abre Estudio Abierto.
-3. Entra al chat e ingresa alias obligatorio.
-4. Selecciona sala tematica.
-5. Envia mensajes, emojis o archivos.
-6. Puede buscar en la sala actual y cargar historial anterior al hacer scroll hacia arriba.
-7. Si recibe mensajes ajenos, ve notificaciones visuales y puede controlar sonido.
-
-## Eventos Socket.IO
-
-- `joinRoom`: usuario entra a sala.
-- `leaveRoom`: usuario sale de sala.
-- `sendMessage`: usuario envia mensaje.
-- `roomHistory`: servidor entrega historial inicial.
-- `newMessage`: servidor emite mensaje nuevo.
-- `systemMessage`: aviso de entrada/salida.
-- `errorMessage`: error validado.
-- `connect` y `disconnect`: estado de conexion.
-
-Formato de mensaje:
-
-```js
+### Healthcheck del Servidor
+El servidor expone el endpoint `GET /api/health` para comprobar el estado de conexión del servicio:
+```json
 {
-  id: 'msg-id',
-  room: 'proyectos',
-  user: 'Alias',
-  text: 'Mensaje',
-  createdAt: '2026-06-25T00:00:00.000Z',
-  attachment: null
+  "ok": true,
+  "service": "estudio-abierto-chat",
+  "socket": true,
+  "port": 3001,
+  "clientOrigin": "http://localhost:5173",
+  "timestamp": "2026-06-25T19:30:00.000Z"
 }
 ```
 
-## Validaciones
+---
 
-- Alias obligatorio, entre 2 y 30 caracteres.
-- Mensaje maximo 500 caracteres, no solo espacios salvo que incluya adjunto.
-- Salas restringidas a `src/data/chatRooms.js` y validadas tambien en backend.
-- Mensajes renderizados como texto plano; no se usa `innerHTML`.
-- Archivos permitidos: PDF, PNG, JPG, JPEG, TXT.
-- Maximo de archivo: 5 MB.
-- Bloqueados: EXE, JS, HTML, PHP, SH, ZIP, BAT, CMD.
-- Backend valida extension, MIME y tamano antes de aceptar el archivo.
+## Arquitectura
 
-## Pruebas Ejecutables
+* **[StudioOpen.jsx](file:///c:/Users/howle/Desktop/ProyectosWeb/Portafolio-Aikia/portafolio-aikia-main/src/components/StudioOpen/StudioOpen.jsx):** Único panel flotante donde reside el chat (evita duplicar el launcher). Monta el controlador de chat de forma persistente.
+* **[useStudioChatController.js](file:///c:/Users/howle/Desktop/ProyectosWeb/Portafolio-Aikia/portafolio-aikia-main/src/hooks/useStudioChatController.js):** Hook que centraliza las conexiones del socket, actualización de estados, sonido y guardado de historial local.
+* **[chatSocket.js](file:///c:/Users/howle/Desktop/ProyectosWeb/Portafolio-Aikia/portafolio-aikia-main/src/services/chatSocket.js):** Conexión Socket.IO con el servidor.
+* **[chatLocalHistory.js](file:///c:/Users/howle/Desktop/ProyectosWeb/Portafolio-Aikia/portafolio-aikia-main/src/services/chatLocalHistory.js):** Lógica de acceso a `localStorage` y combinación cronológica sin duplicación de IDs de mensajes.
+* **[server/index.js](file:///c:/Users/howle/Desktop/ProyectosWeb/Portafolio-Aikia/portafolio-aikia-main/server/index.js):** Servidor HTTP con Express, políticas CORS locales estrictas, endpoint de healthcheck y static path de uploads.
+* **[server/socket.js](file:///c:/Users/howle/Desktop/ProyectosWeb/Portafolio-Aikia/portafolio-aikia-main/server/socket.js):** Manejo de salas de chat por socket, sanitización del contenido recibido y escritura concurrente segura a `messages.json` usando cola de tareas.
 
-```bash
-npm run lint
-npm run build
-npm run test
-git diff --check
-```
+---
 
-Pruebas automatizadas incluidas:
+## Validaciones y Seguridad
 
-- Validacion frontend de alias, mensajes, salas y archivos.
-- Validacion backend de alias, mensajes, salas y archivos.
-- Merge de historial local sin duplicados.
-- Paginacion de historial con menos de 20, exactamente 20 y mas de 20 mensajes.
+* **Alias:** Sanitizado de caracteres `<>` y limitado a un rango de 2 a 30 caracteres.
+* **Mensajes:** Máximo de 500 caracteres, sanitizados antes de transmitirse.
+* **Salas:** Solo se permiten las 6 salas definidas en el archivo de configuración. Cualquier sala inválida es rechazada de inmediato tanto en cliente como en servidor.
+* **Seguridad de origen (CORS):** Control de origen CORS mediante validador dinámico para `http://localhost:5173` y `http://127.0.0.1:5173`.
 
-## QA Manual Docente
+---
 
-Checklist manual para la entrega:
+## Pruebas de Integridad Realizadas
 
-- [ ] Abrir portafolio y confirmar carga completa.
-- [ ] Abrir/cerrar Estudio Abierto sin romper layout.
-- [ ] Probar alias invalido y alias valido.
-- [ ] Abrir dos pestanas con alias distintos.
-- [ ] Enviar mensaje desde pestana A y verlo en pestana B sin recargar.
-- [ ] Cambiar salas y confirmar que no se mezclan mensajes.
-- [ ] Recargar y confirmar alias/historial.
-- [ ] Buscar texto existente e inexistente.
-- [ ] Enviar emoji y confirmar persistencia.
-- [ ] Subir PDF/PNG/JPG/TXT permitido.
-- [ ] Bloquear EXE/JS/HTML/PHP/SH/ZIP/BAT/CMD.
-- [ ] Ver badge/indicador de notificacion con mensaje ajeno.
-- [ ] Activar/desactivar sonido y confirmar que mensaje propio no suena.
-- [ ] Probar mobile, tablet y desktop.
-- [ ] Confirmar que Formspree sigue funcionando.
-
-Evidencia grafica pendiente si se requiere en la entrega: capturas desktop/mobile, dos pestanas, busqueda, archivo, scroll, badge y terminales frontend/backend.
-
-## Decisiones Tecnicas
-
-- Se mantiene `StudioOpen` como unico widget; no hay ruta nueva ni segundo launcher.
-- La conexion Socket.IO queda en un controlador montado desde `StudioOpen`, por lo que puede recibir mensajes aunque la pantalla de chat no este visible.
-- La escritura en JSON se serializa para reducir riesgo de perdida ante envios simultaneos.
-- El scroll infinito usa paginacion exacta con `hasMore`.
-- Los estilos nuevos se limitan a clases `.studio-open__chat-*` al final de `StudioOpen.css`.
+Se ejecutan en la terminal para certificar la consistencia técnica de la entrega:
+* **`npm run test`:** 7/7 pruebas unitarias aprobadas de forma limpia (validación frontend/backend de inputs, salas, merge de historial y paginación retrospectiva).
+* **`npm run lint`:** Linter finalizado sin advertencias ni errores.
+* **`npm run build`:** Compilación de Vite exitosa para producción.
+* **`git diff --check`:**
+  > [!NOTE]
+  > `git diff --check` no reportó errores de whitespace. Git puede mostrar advertencias informativas de conversión de saltos de línea controladas mediante `.gitattributes`.

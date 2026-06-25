@@ -71,10 +71,10 @@ function createSystemMessage(room, text) {
   };
 }
 
-export function registerChatSocket(server, corsOrigin) {
+export function registerChatSocket(server, validateOrigin) {
   const io = new Server(server, {
     cors: {
-      origin: corsOrigin,
+      origin: validateOrigin,
       methods: ['GET', 'POST'],
     },
   });

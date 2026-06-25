@@ -33,3 +33,7 @@ build/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Chat Uploads
+server/data/uploads/*
+!server/data/uploads/.gitkeep

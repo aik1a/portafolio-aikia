@@ -19,7 +19,16 @@ export default function StudioChat({ chat }) {
       />
 
       {chat.socketError ? (
-        <div className="studio-open__chat-status" role="status">{chat.socketError}</div>
+        <div className="studio-open__chat-status" role="status">
+          <span>{chat.socketError}</span>
+          <button
+            className="studio-open__chat-retry"
+            type="button"
+            onClick={chat.onRetryConnection}
+          >
+            Reintentar conexión
+          </button>
+        </div>
       ) : null}
 
       <div className="studio-open__chat-room-container">

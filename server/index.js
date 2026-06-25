@@ -6,6 +6,7 @@ import express from 'express';
 import { getRoomMessages, registerChatSocket } from './socket.js';
 import uploadsRouter from './routes/uploads.routes.js';
 import { validateRoom } from './utils/validateRoom.js';
+import { createOriginValidator } from './utils/validateOrigin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,11 +15,25 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
 const app = express();
 const server = createServer(app);
+const validateOrigin = createOriginValidator(CLIENT_ORIGIN);
 
-app.use(cors({ origin: CLIENT_ORIGIN }));
+app.use(cors({ origin: validateOrigin }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'data', 'uploads')));
 app.use('/api/uploads', uploadsRouter);
+
+const chatSocket = registerChatSocket(server, validateOrigin);
+
+app.get('/api/health', (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'estudio-abierto-chat',
+    socket: Boolean(chatSocket),
+    port: Number(PORT),
+    clientOrigin: CLIENT_ORIGIN,
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.get('/api/messages/:room', async (req, res) => {
   const { room } = req.params;
@@ -38,8 +53,6 @@ app.get('/api/messages/:room', async (req, res) => {
     res.status(500).json({ error: 'No se pudo cargar el historial.' });
   }
 });
-
-registerChatSocket(server, CLIENT_ORIGIN);
 
 server.listen(PORT, () => {
   console.info(`StudioOpen chat server listening on http://localhost:${PORT}`);

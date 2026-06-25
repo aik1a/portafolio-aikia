@@ -99,6 +99,9 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
     const handleDisconnect = () => {
       setSocketError('Servidor de chat desconectado. Puedes seguir viendo tu historial local.');
     };
+    const handleConnectError = () => {
+      setSocketError('No se pudo conectar con el servidor de chat. Revisa que el backend este activo.');
+    };
     const handleRoomHistory = ({ room, messages: incomingMessages }) => {
       setMessages((currentMessages) => mergeRoomMessages(currentMessages, incomingMessages));
       saveRoomHistory(room, incomingMessages);
@@ -126,6 +129,7 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
 
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
+    socket.on('connect_error', handleConnectError);
     socket.on('roomHistory', handleRoomHistory);
     socket.on('newMessage', handleIncomingMessage);
     socket.on('systemMessage', handleIncomingMessage);
@@ -139,6 +143,7 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
       leaveRoom({ room: activeRoomRef.current, alias: aliasRef.current });
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
+      socket.off('connect_error', handleConnectError);
       socket.off('roomHistory', handleRoomHistory);
       socket.off('newMessage', handleIncomingMessage);
       socket.off('systemMessage', handleIncomingMessage);
@@ -206,6 +211,15 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
     }
   };
 
+  const handleRetryConnection = () => {
+    if (!aliasRef.current) return;
+    setSocketError('');
+    const socket = connectChatSocket();
+    if (socket.connected) {
+      joinRoom({ room: activeRoomRef.current, alias: aliasRef.current });
+    }
+  };
+
   const filteredMessages = useMemo(() => {
     return messages.filter((message) => {
       if (message.room !== activeRoomId) return false;
@@ -237,5 +251,6 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
     onSendMessage: handleSendMessage,
     onUploadFile: handleUploadFile,
     onToggleSound: () => setIsMuted((currentValue) => !currentValue),
+    onRetryConnection: handleRetryConnection,
   };
 }

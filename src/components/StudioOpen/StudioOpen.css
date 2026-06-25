@@ -1034,6 +1034,10 @@
 }
 
 .studio-open__chat-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-top: 10px;
   padding: 8px 10px;
   border: 1px solid rgba(22, 20, 17, 0.12);
@@ -1042,6 +1046,23 @@
   color: var(--studio-open-ink);
   font-size: 12px;
   line-height: 1.35;
+}
+
+.studio-open__chat-retry {
+  flex: 0 0 auto;
+  border: 1px solid rgba(22, 20, 17, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 251, 242, 0.85);
+  color: var(--studio-open-ink);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 8px;
+}
+
+.studio-open__chat-retry:focus-visible {
+  outline: 2px solid var(--studio-open-ink);
+  outline-offset: 2px;
 }
 
 .studio-open__chat-history-state {
