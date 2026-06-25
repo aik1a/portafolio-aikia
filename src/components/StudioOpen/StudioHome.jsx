@@ -28,7 +28,28 @@ function ProjectsButton({ onClick }) {
   );
 }
 
-export default function StudioHome({ onSelectFlow, onProjectsClick }) {
+function ChatButton({ onClick }) {
+  return (
+    <button
+      className="studio-open__projects-link"
+      type="button"
+      onClick={onClick}
+      style={{
+        marginTop: '8px',
+        background: 'rgba(248, 195, 203, 0.18)',
+        borderColor: 'rgba(248, 195, 203, 0.4)',
+      }}
+    >
+      <span>
+        <strong>Entrar al chat</strong>
+        <span>Salas de conversación locales</span>
+      </span>
+      <StudioIcon name="chevron" />
+    </button>
+  );
+}
+
+export default function StudioHome({ onSelectFlow, onProjectsClick, onChatClick }) {
   return (
     <div className="studio-open__screen">
       <div className="studio-open__thread">
@@ -60,6 +81,8 @@ export default function StudioHome({ onSelectFlow, onProjectsClick }) {
           />
         ))}
       </div>
+
+      <ChatButton onClick={onChatClick} />
 
       <ProjectsButton onClick={onProjectsClick} />
     </div>

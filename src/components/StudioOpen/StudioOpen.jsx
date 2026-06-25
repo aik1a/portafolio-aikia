@@ -13,6 +13,7 @@ import StudioContact from './StudioContact';
 import StudioState from './StudioState';
 import StudioSymbol from './StudioSymbol';
 import PanelHeading from './PanelHeading';
+import StudioChat from './Chat/StudioChat';
 import './StudioOpen.css';
 
 const STUDIO_SCREENS = {
@@ -27,6 +28,7 @@ const STUDIO_SCREENS = {
   CONTACT: 'contact',
   SUCCESS: 'success',
   ERROR: 'error',
+  CHAT: 'chat',
 };
 
 const FLOW_SCREENS = {
@@ -47,6 +49,7 @@ const screenHeader = {
   [STUDIO_SCREENS.CONTACT]: { title: 'Contacto', subtitle: 'Respuesta por correo' },
   [STUDIO_SCREENS.SUCCESS]: { title: 'Solicitud enviada', subtitle: 'Confirmación' },
   [STUDIO_SCREENS.ERROR]: { title: 'No se pudo enviar', subtitle: 'Intenta otra vez' },
+  [STUDIO_SCREENS.CHAT]: { title: 'Chat de Estudio', subtitle: 'Salas locales' },
 };
 
 const initialLead = {
@@ -326,7 +329,15 @@ export default function StudioOpen() {
         />
         <div className="studio-open__body" ref={bodyRef}>
           {screen === STUDIO_SCREENS.HOME ? (
-            <StudioHome onSelectFlow={selectFlow} onProjectsClick={handleProjectsClick} />
+            <StudioHome
+              onSelectFlow={selectFlow}
+              onProjectsClick={handleProjectsClick}
+              onChatClick={() => goToScreen(STUDIO_SCREENS.CHAT)}
+            />
+          ) : null}
+
+          {screen === STUDIO_SCREENS.CHAT ? (
+            <StudioChat />
           ) : null}
 
           {screen === STUDIO_SCREENS.AREAS ? (
