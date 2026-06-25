@@ -560,6 +560,7 @@ export default function StudioOpen() {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // eslint-disable-next-line no-unused-vars
   function handleContactClick() {
     const target = document.querySelector('#contacto');
 
@@ -624,6 +625,11 @@ export default function StudioOpen() {
       setSubmitStatus('error');
       goToScreen(STUDIO_SCREENS.ERROR);
     }
+  }
+
+  function reviewFailedSubmission() {
+    setSubmitStatus('idle');
+    goToScreen(lead.attachment ? STUDIO_SCREENS.ATTACHMENT : STUDIO_SCREENS.CONTACT);
   }
 
   function resetStudio() {
@@ -719,10 +725,10 @@ export default function StudioOpen() {
               type="error"
               title={studioCopy.error.title}
               message={studioCopy.error.message}
-              primaryActionLabel="Intentar otra vez"
-              secondaryActionLabel="Ir a contacto"
-              onPrimaryAction={() => goToScreen(STUDIO_SCREENS.CONTACT)}
-              onSecondaryAction={handleContactClick}
+              primaryActionLabel="Revisar envío"
+              secondaryActionLabel="Volver al inicio"
+              onPrimaryAction={reviewFailedSubmission}
+              onSecondaryAction={resetStudio}
             />
           ) : null}
         </div>
