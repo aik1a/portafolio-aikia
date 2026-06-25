@@ -8,6 +8,7 @@ import Formacion from './components/Formacion';
 import Contacto from './components/Contacto';
 import Footer from './components/Footer';
 import DecoPreview from './components/DecoPreview';
+import StudioOpen from './components/StudioOpen/StudioOpen';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -65,6 +66,7 @@ export default function App() {
         <Contacto />
       </main>
       <Footer />
+      <StudioOpen />
     </div>
   );
 }
