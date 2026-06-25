@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeChatText, validateChatAlias } from '../../../utils/chatValidation';
 import PanelHeading from '../PanelHeading';
 import StudioSymbol from '../StudioSymbol';
 
@@ -8,8 +9,8 @@ export default function ChatAliasForm({ onSaveAlias }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const trimmed = alias.trim();
-    if (trimmed.length < 2 || trimmed.length > 30) {
+    const trimmed = sanitizeChatText(alias);
+    if (!validateChatAlias(trimmed)) {
       setError(true);
       return;
     }
@@ -21,10 +22,10 @@ export default function ChatAliasForm({ onSaveAlias }) {
     <div className="studio-open__screen">
       <PanelHeading
         icon="robot"
-        title="Identifícate"
-        description="Ingresa un alias para participar en el chat en tiempo real. No requiere registro ni contraseña."
+        title="Identificate"
+        description="Ingresa un alias para participar en el chat en tiempo real. No requiere registro ni contrasena."
       />
-      <form onSubmit={handleSubmit} className="studio-open__question-list" style={{ marginTop: '14px' }}>
+      <form onSubmit={handleSubmit} className="studio-open__question-list studio-open__chat-alias-form">
         <div className={`studio-open__form-group${error ? ' has-error' : ''}`}>
           <label htmlFor="chat-alias-input">Tu Alias / Nombre:</label>
           <input
@@ -32,12 +33,12 @@ export default function ChatAliasForm({ onSaveAlias }) {
             id="chat-alias-input"
             type="text"
             value={alias}
-            placeholder="Ej. DiseñadorWeb"
+            placeholder="Ej. DisenadorWeb"
             onChange={(event) => {
               setAlias(event.target.value);
               setError(false);
             }}
-            maxLength={35}
+            maxLength={30}
             autoFocus
           />
           {error ? (
@@ -49,7 +50,6 @@ export default function ChatAliasForm({ onSaveAlias }) {
         <button
           className="studio-open__btn studio-open__btn--primary studio-open__btn--full"
           type="submit"
-          style={{ marginTop: '6px' }}
         >
           <StudioSymbol name="check" />
           Ingresar al chat

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { studioCopy } from '../../data/studioCopy';
 import { flowQuestions, mainActions, workAreas } from '../../data/studioOptions';
 import { sendStudioLead } from '../../services/sendStudioLead';
+import { useStudioChatController } from '../../hooks/useStudioChatController';
 import { validateAttachment, validateEmail, validateMessage, validateName } from '../../utils/studioValidation';
 import StudioHeader from './StudioHeader';
 import StudioLauncher from './StudioLauncher';
@@ -39,17 +40,17 @@ const FLOW_SCREENS = {
 
 const screenHeader = {
   [STUDIO_SCREENS.HOME]: studioCopy.header,
-  [STUDIO_SCREENS.AREAS]: { title: 'Áreas de trabajo', subtitle: 'Líneas principales' },
+  [STUDIO_SCREENS.AREAS]: { title: 'Areas de trabajo', subtitle: 'Lineas principales' },
   [STUDIO_SCREENS.IDEA]: { title: 'Ordenemos tu idea', subtitle: 'Preguntas breves' },
-  [STUDIO_SCREENS.WEB]: { title: 'Página web', subtitle: 'Solicitud guiada' },
+  [STUDIO_SCREENS.WEB]: { title: 'Pagina web', subtitle: 'Solicitud guiada' },
   [STUDIO_SCREENS.COLLAB]: { title: 'Colaboremos', subtitle: 'Propuestas y networking' },
   [STUDIO_SCREENS.NEXT]: { title: 'Siguiente paso', subtitle: 'Enviar o revisar' },
-  [STUDIO_SCREENS.LEAD]: { title: 'Envía una consulta', subtitle: 'Cuéntame tu idea' },
+  [STUDIO_SCREENS.LEAD]: { title: 'Envia una consulta', subtitle: 'Cuentame tu idea' },
   [STUDIO_SCREENS.ATTACHMENT]: { title: 'Archivos', subtitle: 'Paso opcional' },
   [STUDIO_SCREENS.CONTACT]: { title: 'Contacto', subtitle: 'Respuesta por correo' },
-  [STUDIO_SCREENS.SUCCESS]: { title: 'Solicitud enviada', subtitle: 'Confirmación' },
+  [STUDIO_SCREENS.SUCCESS]: { title: 'Solicitud enviada', subtitle: 'Confirmacion' },
   [STUDIO_SCREENS.ERROR]: { title: 'No se pudo enviar', subtitle: 'Intenta otra vez' },
-  [STUDIO_SCREENS.CHAT]: { title: 'Chat de Estudio', subtitle: 'Salas locales' },
+  [STUDIO_SCREENS.CHAT]: { title: 'Chat de Estudio', subtitle: 'Salas en tiempo real' },
 };
 
 const initialLead = {
@@ -124,7 +125,15 @@ export default function StudioOpen() {
   const [lead, setLead] = useState(initialLead);
   const [errors, setErrors] = useState({});
   const [submitStatus, setSubmitStatus] = useState('idle');
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const bodyRef = useRef(null);
+  const handleChatNotification = useCallback(() => {
+    setChatUnreadCount((currentCount) => currentCount + 1);
+  }, []);
+  const chat = useStudioChatController({
+    isPanelOpen: isOpen,
+    onNotification: handleChatNotification,
+  });
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -147,6 +156,7 @@ export default function StudioOpen() {
 
   function openStudio() {
     setIsOpen(true);
+    setChatUnreadCount(0);
   }
 
   function closeStudio() {
@@ -222,24 +232,7 @@ export default function StudioOpen() {
 
   function handleProjectsClick() {
     const target = document.querySelector('#proyectos');
-
-    if (!target) {
-      console.warn('No se encontró #proyectos');
-      return;
-    }
-
-    closeStudio();
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  function handleContactClick() {
-    const target = document.querySelector('#contacto');
-
-    if (!target) {
-      console.warn('No se encontró #contacto');
-      return;
-    }
+    if (!target) return;
 
     closeStudio();
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -292,8 +285,7 @@ export default function StudioOpen() {
       });
       setSubmitStatus('success');
       goToScreen(STUDIO_SCREENS.SUCCESS);
-    } catch (error) {
-      console.error(error);
+    } catch {
       setSubmitStatus('error');
       goToScreen(STUDIO_SCREENS.ERROR);
     }
@@ -337,7 +329,7 @@ export default function StudioOpen() {
           ) : null}
 
           {screen === STUDIO_SCREENS.CHAT ? (
-            <StudioChat />
+            <StudioChat chat={chat} />
           ) : null}
 
           {screen === STUDIO_SCREENS.AREAS ? (
@@ -405,7 +397,7 @@ export default function StudioOpen() {
               type="error"
               title={studioCopy.error.title}
               message={studioCopy.error.message}
-              primaryActionLabel="Revisar envío"
+              primaryActionLabel="Revisar envio"
               secondaryActionLabel="Volver al inicio"
               onPrimaryAction={reviewFailedSubmission}
               onSecondaryAction={resetStudio}
@@ -414,7 +406,11 @@ export default function StudioOpen() {
         </div>
       </section>
 
-      <StudioLauncher isOpen={isOpen} onToggle={isOpen ? closeStudio : openStudio} />
+      <StudioLauncher
+        isOpen={isOpen}
+        unreadCount={chatUnreadCount}
+        onToggle={isOpen ? closeStudio : openStudio}
+      />
     </div>
   );
 }

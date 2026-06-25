@@ -31,14 +31,9 @@ function ProjectsButton({ onClick }) {
 function ChatButton({ onClick }) {
   return (
     <button
-      className="studio-open__projects-link"
+      className="studio-open__projects-link studio-open__chat-entry-link"
       type="button"
       onClick={onClick}
-      style={{
-        marginTop: '8px',
-        background: 'rgba(248, 195, 203, 0.18)',
-        borderColor: 'rgba(248, 195, 203, 0.4)',
-      }}
     >
       <span>
         <strong>Entrar al chat</strong>

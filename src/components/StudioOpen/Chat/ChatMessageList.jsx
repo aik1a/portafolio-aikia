@@ -1,51 +1,58 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import ChatMessageBubble from './ChatMessageBubble';
 
-export default function ChatMessageList({ messages, currentUserAlias }) {
+export default function ChatMessageList({
+  messages,
+  currentUserAlias,
+  onLoadMore,
+  isLoadingMore,
+  hasMore,
+  emptyText = 'No hay mensajes en esta sala. Se el primero en saludar!',
+}) {
   const containerRef = useRef(null);
+  const previousHeightRef = useRef(0);
+  const lastMessageId = messages.at(-1)?.id;
 
-  // Auto-scroll al final del listado al recibir mensajes nuevos
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [lastMessageId]);
+
+  useLayoutEffect(() => {
+    if (!isLoadingMore && previousHeightRef.current && containerRef.current) {
+      const nextHeight = containerRef.current.scrollHeight;
+      containerRef.current.scrollTop = nextHeight - previousHeightRef.current;
+      previousHeightRef.current = 0;
+    }
+  }, [isLoadingMore, messages]);
+
+  const handleScroll = () => {
+    if (!containerRef.current || !hasMore || isLoadingMore) return;
+    if (containerRef.current.scrollTop <= 12) {
+      previousHeightRef.current = containerRef.current.scrollHeight;
+      onLoadMore?.();
+    }
+  };
 
   return (
     <div
       ref={containerRef}
       className="studio-open__chat-message-list"
-      style={{
-        flex: '1 1 auto',
-        overflowY: 'auto',
-        padding: '8px 4px',
-        maxHeight: '300px',
-        minHeight: '200px',
-        border: '1px solid rgba(22, 20, 17, 0.08)',
-        borderRadius: '16px',
-        background: 'var(--studio-open-cream)',
-        marginBottom: '10px',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
+      onScroll={handleScroll}
     >
+      {isLoadingMore ? (
+        <div className="studio-open__chat-history-state">Cargando mensajes anteriores...</div>
+      ) : null}
+      {!hasMore && messages.length > 0 ? (
+        <div className="studio-open__chat-history-state">No hay mas mensajes anteriores.</div>
+      ) : null}
       {messages.length === 0 ? (
-        <div
-          style={{
-            flex: '1',
-            display: 'grid',
-            placeItems: 'center',
-            color: 'var(--studio-open-muted)',
-            fontSize: '12px',
-            textAlign: 'center',
-            padding: '20px',
-            fontStyle: 'italic',
-          }}
-        >
-          No hay mensajes en esta sala. ¡Sé el primero en saludar!
+        <div className="studio-open__chat-empty">
+          {emptyText}
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <div className="studio-open__chat-message-container">
           {messages.map((message) => (
             <ChatMessageBubble
               key={message.id}

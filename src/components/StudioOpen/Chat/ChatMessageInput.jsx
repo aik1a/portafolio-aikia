@@ -1,12 +1,16 @@
 import { useRef, useState } from 'react';
+import { validateChatFile } from '../../../utils/chatFileValidation';
 import ChatSoundToggle from './ChatSoundToggle';
 
 const EMOJIS = ['✨', '💡', '🎨', '🧩', '🚀', '👀', '✅', '🤝', '📎'];
 
-export default function ChatMessageInput({ onSendMessage, isMuted, onToggleSound }) {
+export default function ChatMessageInput({ onSendMessage, onUploadFile, isMuted, onToggleSound }) {
   const [text, setText] = useState('');
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -19,60 +23,57 @@ export default function ChatMessageInput({ onSendMessage, isMuted, onToggleSound
 
   const handleEmojiClick = (emoji) => {
     if (!inputRef.current) {
-      setText((prev) => prev + emoji);
+      setText((prev) => (prev + emoji).slice(0, 500));
       return;
     }
 
     const input = inputRef.current;
     const start = input.selectionStart ?? text.length;
     const end = input.selectionEnd ?? text.length;
-
     const newText = text.substring(0, start) + emoji + text.substring(end);
-    setText(newText);
+    if (newText.length > 500) return;
 
-    // Reposicionar el cursor después de insertar el emoji
+    setText(newText);
     setTimeout(() => {
       input.focus();
       input.setSelectionRange(start + emoji.length, start + emoji.length);
     }, 10);
   };
 
-  const handleAttachClick = () => {
-    alert('Subida de archivos no implementada en esta fase.');
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError('');
+    const validation = validateChatFile(file);
+    if (!validation.ok) {
+      setUploadError(validation.error);
+      event.target.value = '';
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      await onUploadFile(file);
+    } catch (error) {
+      setUploadError(error.message || 'No se pudo adjuntar el archivo.');
+    } finally {
+      setIsUploading(false);
+      event.target.value = '';
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="studio-open__chat-input-form" style={{ width: '100%' }}>
+    <form onSubmit={handleSubmit} className="studio-open__chat-input-form">
       {showEmojiPanel ? (
-        <div
-          className="studio-open__emoji-panel"
-          style={{
-            display: 'flex',
-            gap: '8px',
-            padding: '8px',
-            background: 'rgba(255, 251, 242, 0.9)',
-            border: '1px solid rgba(22, 20, 17, 0.1)',
-            borderRadius: '12px',
-            marginBottom: '6px',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-          }}
-        >
+        <div className="studio-open__chat-emoji-panel">
           {EMOJIS.map((emoji) => (
             <button
               key={emoji}
               type="button"
+              className="studio-open__chat-emoji-btn"
               onClick={() => handleEmojiClick(emoji)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontSize: '18px',
-                cursor: 'pointer',
-                padding: '4px',
-                transition: 'transform 0.1s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
               {emoji}
             </button>
@@ -80,92 +81,58 @@ export default function ChatMessageInput({ onSendMessage, isMuted, onToggleSound
         </div>
       ) : null}
 
-      <div style={{ display: 'flex', gap: '6px', width: '100%' }}>
+      <div className="studio-open__chat-input-row">
         <input
           ref={inputRef}
           type="text"
-          className="studio-open__text-field"
+          className="studio-open__text-field studio-open__chat-input-field"
           placeholder="Escribe un mensaje..."
           value={text}
           onChange={(event) => setText(event.target.value)}
           maxLength={500}
-          style={{
-            flex: '1',
-            borderRadius: '12px',
-            height: '36px',
-            padding: '0 12px',
-            fontSize: '13px',
-          }}
         />
         <button
           type="submit"
-          className="studio-open__btn studio-open__btn--primary"
+          className="studio-open__btn studio-open__btn--primary studio-open__chat-submit-btn"
           disabled={!text.trim() || text.length > 500}
-          style={{
-            height: '36px',
-            padding: '0 14px',
-            borderRadius: '12px',
-          }}
         >
           Enviar
         </button>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: '6px',
-          padding: '0 2px',
-        }}
-      >
-        {/* Lado izquierdo: Emojis y Adjuntar */}
-        <div style={{ display: 'flex', gap: '6px' }}>
+      {uploadError ? (
+        <p className="studio-open__field-error studio-open__chat-upload-error">{uploadError}</p>
+      ) : null}
+
+      <div className="studio-open__chat-control-bar">
+        <div className="studio-open__chat-control-left">
           <button
             type="button"
-            className="studio-open__icon-button"
+            className="studio-open__icon-button studio-open__chat-action-btn"
             onClick={() => setShowEmojiPanel(!showEmojiPanel)}
             title="Insertar emoji"
-            style={{
-              width: '32px',
-              height: '32px',
-              fontSize: '14px',
-              borderRadius: '8px',
-              border: '1px solid rgba(22, 20, 17, 0.1)',
-              background: 'rgba(255, 251, 242, 0.6)',
-              cursor: 'pointer',
-              display: 'grid',
-              placeItems: 'center',
-            }}
           >
             😊
           </button>
           <button
             type="button"
-            className="studio-open__icon-button"
-            onClick={handleAttachClick}
-            title="Adjuntar archivo (No disponible)"
-            style={{
-              width: '32px',
-              height: '32px',
-              fontSize: '14px',
-              borderRadius: '8px',
-              border: '1px solid rgba(22, 20, 17, 0.1)',
-              background: 'rgba(255, 251, 242, 0.6)',
-              cursor: 'pointer',
-              display: 'grid',
-              placeItems: 'center',
-            }}
+            className="studio-open__icon-button studio-open__chat-action-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            title="Adjuntar archivo"
           >
-            📎
+            {isUploading ? '...' : '📎'}
           </button>
+          <input
+            ref={fileInputRef}
+            className="studio-open__chat-file-input"
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg,.txt"
+            onChange={handleFileChange}
+          />
         </div>
 
-        {/* Lado derecho: Control de sonido (Claramente separado) */}
-        <div>
-          <ChatSoundToggle isMuted={isMuted} onToggle={onToggleSound} />
-        </div>
+        <ChatSoundToggle isMuted={isMuted} onToggle={onToggleSound} />
       </div>
     </form>
   );
