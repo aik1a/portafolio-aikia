@@ -7,6 +7,10 @@ import StudioHeader from './StudioHeader';
 import StudioLauncher from './StudioLauncher';
 import StudioHome from './StudioHome';
 import StudioFlowScreen from './StudioFlowScreen';
+import StudioLeadForm from './StudioLeadForm';
+import StudioAttachment from './StudioAttachment';
+import StudioContact from './StudioContact';
+import StudioState from './StudioState';
 import StudioSymbol from './StudioSymbol';
 import PanelHeading from './PanelHeading';
 import './StudioOpen.css';
@@ -103,127 +107,6 @@ function StudioNextStep({ onProjectsClick, onLead }) {
             Enviar consulta
           </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StudioLeadForm({ lead, errors, onChange, onContinue }) {
-  return (
-    <div className="studio-open__screen">
-      <PanelHeading icon="memo" title={studioCopy.lead.title} description={studioCopy.lead.description} />
-      <div className={`studio-open__form-group${errors.name ? ' has-error' : ''}`}>
-        <label htmlFor="studio-lead-name">{studioCopy.lead.nameLabel}</label>
-        <input
-          className="studio-open__text-field"
-          id="studio-lead-name"
-          type="text"
-          value={lead.name}
-          placeholder={studioCopy.lead.namePlaceholder}
-          onChange={(event) => onChange('name', event.target.value)}
-        />
-        {errors.name ? <p className="studio-open__field-error">{studioCopy.lead.nameError}</p> : null}
-      </div>
-      <div className={`studio-open__form-group${errors.message ? ' has-error' : ''}`}>
-        <label htmlFor="studio-lead-message">{studioCopy.lead.messageLabel}</label>
-        <textarea
-          className="studio-open__textarea-field"
-          id="studio-lead-message"
-          value={lead.message}
-          placeholder={studioCopy.lead.messagePlaceholder}
-          onChange={(event) => onChange('message', event.target.value)}
-        />
-        {errors.message ? <p className="studio-open__field-error">{studioCopy.lead.messageError}</p> : null}
-      </div>
-      <button className="studio-open__btn studio-open__btn--primary studio-open__btn--full" type="button" onClick={onContinue}>
-        <StudioSymbol name="paperclip" />
-        Continuar
-      </button>
-    </div>
-  );
-}
-
-function StudioAttachment({ file, error, onAttach, onRemove, onContinue, onSkip }) {
-  return (
-    <div className="studio-open__screen">
-      <PanelHeading icon="paperclip" title={studioCopy.attachment.title} description={studioCopy.attachment.description} />
-      <div className="studio-open__file-zone">
-        <div className={`studio-open__file-status${file ? ' is-ok' : ''}${error ? ' has-error' : ''}`} role="status" aria-live="polite">
-          <StudioSymbol name={error ? 'alert' : file ? 'check' : 'paperclip'} />
-          <span>
-            {error || (file ? `${studioCopy.attachment.success}: ${file.name}` : studioCopy.attachment.empty)}
-          </span>
-        </div>
-        <label className="studio-open__btn studio-open__file-button" htmlFor="studio-file-input">
-          <StudioSymbol name="paperclip" />
-          Adjuntar archivo
-        </label>
-        <input
-          id="studio-file-input"
-          className="studio-open__file-input"
-          type="file"
-          accept=".pdf,.png,.jpg,.jpeg,.txt"
-          onChange={(event) => onAttach(event.target.files?.[0] || null)}
-        />
-        {file ? (
-          <button className="studio-open__small-link" type="button" onClick={onRemove}>
-            Quitar archivo
-          </button>
-        ) : null}
-        <button className="studio-open__btn studio-open__btn--primary" type="button" onClick={onContinue}>
-          <StudioSymbol name="mail" />
-          Continuar
-        </button>
-        <button className="studio-open__small-link" type="button" onClick={onSkip}>
-          Omitir este paso
-        </button>
-      </div>
-      <p className="studio-open__footer-note">{studioCopy.attachment.helper}</p>
-    </div>
-  );
-}
-
-function StudioContact({ email, error, submitStatus, onChange, onSubmit }) {
-  const isSending = submitStatus === 'sending';
-
-  return (
-    <div className="studio-open__screen">
-      <PanelHeading icon="mail" title={studioCopy.contact.title} description={studioCopy.contact.description} />
-      <div className={`studio-open__form-group${error ? ' has-error' : ''}`}>
-        <label htmlFor="studio-contact-email">{studioCopy.contact.label}</label>
-        <input
-          className="studio-open__text-field"
-          id="studio-contact-email"
-          type="email"
-          value={email}
-          placeholder={studioCopy.contact.placeholder}
-          onChange={(event) => onChange('email', event.target.value)}
-        />
-        {error ? <p className="studio-open__field-error">{studioCopy.contact.error}</p> : null}
-      </div>
-      <button className="studio-open__btn studio-open__btn--primary studio-open__btn--full" type="button" disabled={isSending} onClick={onSubmit}>
-        <StudioSymbol name="mail" />
-        {isSending ? 'Enviando...' : 'Enviar consulta →'}
-      </button>
-    </div>
-  );
-}
-
-function StudioState({ type, title, message, primaryActionLabel, secondaryActionLabel, onPrimaryAction, onSecondaryAction }) {
-  return (
-    <div className="studio-open__screen">
-      <div className="studio-open__state-card">
-        <span className="studio-open__state-icon"><StudioSymbol name={type === 'success' ? 'check' : 'alert'} /></span>
-        <h2>{title}</h2>
-        <p>{message}</p>
-        <button className="studio-open__btn studio-open__btn--primary studio-open__btn--full" type="button" onClick={onPrimaryAction}>
-          {primaryActionLabel}
-        </button>
-        {secondaryActionLabel ? (
-          <button className="studio-open__small-link" type="button" onClick={onSecondaryAction}>
-            {secondaryActionLabel}
-          </button>
-        ) : null}
       </div>
     </div>
   );
