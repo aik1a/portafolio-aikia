@@ -594,6 +594,8 @@ export default function StudioOpen() {
   }
 
   async function handleSubmit() {
+    if (submitStatus === 'sending') return;
+
     if (!validateEmail(lead.email)) {
       setErrors((currentErrors) => ({
         ...currentErrors,

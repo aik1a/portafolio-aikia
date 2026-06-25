@@ -70,7 +70,7 @@ export const studioCopy = {
   success: {
     title: 'Solicitud enviada ✦',
     message:
-      'Recibí tu mensaje. Te llegará una confirmación por correo y podré responderte con más calma.',
+      'Tu solicitud fue enviada correctamente. Te responderé al correo que ingresaste.',
   },
   error: {
     title: 'No se pudo enviar',
