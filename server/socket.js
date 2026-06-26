@@ -3,7 +3,6 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { Server } from 'socket.io';
 import { sanitizeText, validateAlias } from './utils/validateAlias.js';
 import { validateMessage } from './utils/validateMessage.js';
-import { paginateMessages } from './utils/paginateMessages.js';
 import { CHAT_ROOM_IDS, validateRoom } from './utils/validateRoom.js';
 
 const DATA_PATH = new URL('./data/messages.json', import.meta.url);
@@ -30,13 +29,17 @@ async function writeMessages(messages) {
   await writeFile(DATA_PATH, `${JSON.stringify(messages, null, 2)}\n`, 'utf8');
 }
 
-export async function getRoomMessages(roomId, { limit = HISTORY_LIMIT, before } = {}) {
+export async function getRoomMessages(roomId) {
   if (!validateRoom(roomId)) {
     throw new Error('Sala no valida.');
   }
 
   const messages = await readMessages();
-  return paginateMessages(messages[roomId], { limit, before });
+  const roomMessages = messages[roomId] || [];
+  const sortedMessages = [...roomMessages].sort((a, b) => {
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+  return { messages: sortedMessages.slice(-HISTORY_LIMIT) };
 }
 
 async function appendMessage(message) {
@@ -48,7 +51,6 @@ async function appendMessage(message) {
       user: sanitizeText(message.user),
       text: sanitizeText(message.text),
       createdAt: message.createdAt || new Date().toISOString(),
-      attachment: message.attachment || null,
     };
 
     messages[nextMessage.room] = [...messages[nextMessage.room], nextMessage];
@@ -67,7 +69,6 @@ function createSystemMessage(room, text) {
     user: 'system',
     text,
     createdAt: new Date().toISOString(),
-    attachment: null,
   };
 }
 

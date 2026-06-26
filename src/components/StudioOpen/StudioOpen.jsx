@@ -3,13 +3,12 @@ import { studioCopy } from '../../data/studioCopy';
 import { flowQuestions, mainActions, workAreas } from '../../data/studioOptions';
 import { sendStudioLead } from '../../services/sendStudioLead';
 import { useStudioChatController } from '../../hooks/useStudioChatController';
-import { validateAttachment, validateEmail, validateMessage, validateName } from '../../utils/studioValidation';
+import { validateEmail, validateMessage, validateName } from '../../utils/studioValidation';
 import StudioHeader from './StudioHeader';
 import StudioLauncher from './StudioLauncher';
 import StudioHome from './StudioHome';
 import StudioFlowScreen from './StudioFlowScreen';
 import StudioLeadForm from './StudioLeadForm';
-import StudioAttachment from './StudioAttachment';
 import StudioContact from './StudioContact';
 import StudioState from './StudioState';
 import StudioSymbol from './StudioSymbol';
@@ -97,10 +96,6 @@ function StudioNextStep({ onProjectsClick, onLead }) {
         <h2>{studioCopy.next.title}</h2>
         <p>{studioCopy.next.main}</p>
         <p>{studioCopy.next.secondary}</p>
-        <div className="studio-open__notice">
-          <StudioSymbol name="paperclip" />
-          <span>{studioCopy.next.attachment}</span>
-        </div>
         <div className="studio-open__button-row">
           <button className="studio-open__btn" type="button" onClick={onProjectsClick}>
             <StudioSymbol name="down" />
@@ -206,30 +201,6 @@ export default function StudioOpen() {
     }));
   }
 
-  function setAttachment(file) {
-    const validation = validateAttachment(file);
-
-    if (!validation.ok) {
-      setLead((currentLead) => ({ ...currentLead, attachment: null }));
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        attachment: studioCopy.attachment.error,
-      }));
-      return;
-    }
-
-    setLead((currentLead) => ({ ...currentLead, attachment: file }));
-    setErrors((currentErrors) => ({
-      ...currentErrors,
-      attachment: false,
-    }));
-  }
-
-  function removeAttachment() {
-    setLead((currentLead) => ({ ...currentLead, attachment: null }));
-    setErrors((currentErrors) => ({ ...currentErrors, attachment: false }));
-  }
-
   function handleProjectsClick() {
     const target = document.querySelector('#proyectos');
     if (!target) return;
@@ -251,11 +222,6 @@ export default function StudioOpen() {
 
     if (nextErrors.name || nextErrors.message) return;
 
-    goToScreen(STUDIO_SCREENS.ATTACHMENT);
-  }
-
-  function handleAttachmentContinue() {
-    setErrors((currentErrors) => ({ ...currentErrors, attachment: false }));
     goToScreen(STUDIO_SCREENS.CONTACT);
   }
 
@@ -293,7 +259,7 @@ export default function StudioOpen() {
 
   function reviewFailedSubmission() {
     setSubmitStatus('idle');
-    goToScreen(lead.attachment ? STUDIO_SCREENS.ATTACHMENT : STUDIO_SCREENS.CONTACT);
+    goToScreen(STUDIO_SCREENS.CONTACT);
   }
 
   function resetStudio() {
@@ -361,16 +327,7 @@ export default function StudioOpen() {
             />
           ) : null}
 
-          {screen === STUDIO_SCREENS.ATTACHMENT ? (
-            <StudioAttachment
-              file={lead.attachment}
-              error={errors.attachment}
-              onAttach={setAttachment}
-              onRemove={removeAttachment}
-              onContinue={handleAttachmentContinue}
-              onSkip={handleAttachmentContinue}
-            />
-          ) : null}
+
 
           {screen === STUDIO_SCREENS.CONTACT ? (
             <StudioContact

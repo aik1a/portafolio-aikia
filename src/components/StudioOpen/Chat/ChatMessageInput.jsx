@@ -1,16 +1,12 @@
 import { useRef, useState } from 'react';
-import { validateChatFile } from '../../../utils/chatFileValidation';
 import ChatSoundToggle from './ChatSoundToggle';
 
-const EMOJIS = ['✨', '💡', '🎨', '🧩', '🚀', '👀', '✅', '🤝', '📎'];
+const EMOJIS = ['✨', '💡', '🎨', '🧩', '🚀', '👀', '✅', '🤝'];
 
-export default function ChatMessageInput({ onSendMessage, onUploadFile, isMuted, onToggleSound }) {
+export default function ChatMessageInput({ onSendMessage, isMuted, onToggleSound }) {
   const [text, setText] = useState('');
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
-  const [uploadError, setUploadError] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -38,30 +34,6 @@ export default function ChatMessageInput({ onSendMessage, onUploadFile, isMuted,
       input.focus();
       input.setSelectionRange(start + emoji.length, start + emoji.length);
     }, 10);
-  };
-
-  const handleFileChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploadError('');
-    const validation = validateChatFile(file);
-    if (!validation.ok) {
-      setUploadError(validation.error);
-      event.target.value = '';
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      await onUploadFile(file);
-    } catch (error) {
-      setUploadError(error.message || 'No se pudo adjuntar el archivo.');
-    } finally {
-      setIsUploading(false);
-      event.target.value = '';
-    }
   };
 
   return (
@@ -100,10 +72,6 @@ export default function ChatMessageInput({ onSendMessage, onUploadFile, isMuted,
         </button>
       </div>
 
-      {uploadError ? (
-        <p className="studio-open__field-error studio-open__chat-upload-error">{uploadError}</p>
-      ) : null}
-
       <div className="studio-open__chat-control-bar">
         <div className="studio-open__chat-control-left">
           <button
@@ -114,22 +82,6 @@ export default function ChatMessageInput({ onSendMessage, onUploadFile, isMuted,
           >
             😊
           </button>
-          <button
-            type="button"
-            className="studio-open__icon-button studio-open__chat-action-btn"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            title="Adjuntar archivo"
-          >
-            {isUploading ? '...' : '📎'}
-          </button>
-          <input
-            ref={fileInputRef}
-            className="studio-open__chat-file-input"
-            type="file"
-            accept=".pdf,.png,.jpg,.jpeg,.txt"
-            onChange={handleFileChange}
-          />
         </div>
 
         <ChatSoundToggle isMuted={isMuted} onToggle={onToggleSound} />

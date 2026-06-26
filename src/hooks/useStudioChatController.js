@@ -12,12 +12,10 @@ import {
 } from '../services/chatLocalHistory';
 import {
   connectChatSocket,
-  fetchOlderMessages,
   getChatSocket,
   joinRoom,
   leaveRoom,
   sendMessage,
-  uploadChatFile,
 } from '../services/chatSocket';
 import {
   createChatMessageId,
@@ -51,13 +49,8 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
   const [alias, setAlias] = useState(() => getChatAlias());
   const [activeRoomId, setActiveRoomId] = useState('proyectos');
   const [messages, setMessages] = useState(readInitialMessages);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMuted, setIsMuted] = useState(() => getSoundMutedPreference());
   const [socketError, setSocketError] = useState('');
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [roomHasMore, setRoomHasMore] = useState(() => {
-    return CHAT_ROOMS.reduce((acc, room) => ({ ...acc, [room.id]: true }), {});
-  });
   const [unreadRooms, setUnreadRooms] = useState({});
   const activeRoomRef = useRef(activeRoomId);
   const aliasRef = useRef(alias);
@@ -156,9 +149,9 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
     setAlias(nextAlias);
   };
 
-  const handleSendMessage = (text, attachment = null) => {
+  const handleSendMessage = (text) => {
     const sanitizedText = sanitizeChatText(text);
-    if (!validateChatMessage(sanitizedText) && !attachment) return;
+    if (!validateChatMessage(sanitizedText)) return;
 
     const newMessage = {
       id: createChatMessageId(),
@@ -166,7 +159,6 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
       user: alias,
       text: sanitizedText,
       createdAt: new Date().toISOString(),
-      attachment,
     };
 
     if (getChatSocket().connected) {
@@ -178,36 +170,13 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
     }
   };
 
-  const handleUploadFile = async (file) => {
-    const attachment = await uploadChatFile(file);
-    handleSendMessage('', attachment);
-  };
-
   const handleSelectRoom = (roomId) => {
     if (roomId === activeRoomId) return;
     leaveRoom({ room: activeRoomId, alias });
     setActiveRoomId(roomId);
-    setSearchQuery('');
     setUnreadRooms((currentRooms) => ({ ...currentRooms, [roomId]: false }));
     if (alias) {
       joinRoom({ room: roomId, alias });
-    }
-  };
-
-  const handleLoadMore = async () => {
-    const roomMessages = messages.filter((message) => message.room === activeRoomId);
-    const oldestMessage = roomMessages[0];
-    if (!oldestMessage || isLoadingMore || !roomHasMore[activeRoomId]) return;
-
-    setIsLoadingMore(true);
-    try {
-      const payload = await fetchOlderMessages(activeRoomId, oldestMessage.createdAt);
-      setMessages((currentMessages) => mergeRoomMessages(payload.messages, currentMessages));
-      setRoomHasMore((current) => ({ ...current, [activeRoomId]: payload.hasMore }));
-    } catch (error) {
-      setSocketError(error.message || 'No se pudo cargar historial anterior.');
-    } finally {
-      setIsLoadingMore(false);
     }
   };
 
@@ -221,35 +190,19 @@ export function useStudioChatController({ isPanelOpen, onNotification }) {
   };
 
   const filteredMessages = useMemo(() => {
-    return messages.filter((message) => {
-      if (message.room !== activeRoomId) return false;
-      if (!searchQuery.trim()) return true;
-      const query = searchQuery.toLowerCase();
-      return (
-        message.text.toLowerCase().includes(query) ||
-        message.user.toLowerCase().includes(query) ||
-        message.attachment?.originalName?.toLowerCase().includes(query)
-      );
-    });
-  }, [activeRoomId, messages, searchQuery]);
+    return messages.filter((message) => message.room === activeRoomId);
+  }, [activeRoomId, messages]);
 
   return {
     alias,
     activeRoomId,
     unreadRooms,
-    searchQuery,
-    setSearchQuery,
     isMuted,
     socketError,
-    isLoadingMore,
-    hasMore: Boolean(roomHasMore[activeRoomId]) && !searchQuery.trim(),
     filteredMessages,
-    hasSearch: Boolean(searchQuery.trim()),
     onSaveAlias: handleSaveAlias,
     onSelectRoom: handleSelectRoom,
-    onLoadMore: handleLoadMore,
     onSendMessage: handleSendMessage,
-    onUploadFile: handleUploadFile,
     onToggleSound: () => setIsMuted((currentValue) => !currentValue),
     onRetryConnection: handleRetryConnection,
   };

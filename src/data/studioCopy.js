@@ -43,7 +43,7 @@ export const studioCopy = {
   lead: {
     title: 'Envía una consulta',
     description:
-      'Primero cuéntame qué necesitas o qué quieres construir. Después podrás agregar archivos si ayudan a explicar mejor la idea.',
+      'Primero cuéntame qué necesitas o qué quieres construir para avanzar en tu consulta.',
     nameLabel: 'Nombre o alias',
     namePlaceholder: 'Tu nombre o alias',
     nameError: 'Escribe un nombre o alias para continuar.',

@@ -23,17 +23,6 @@ export default function ChatMessageBubble({ message, isOwn }) {
       </span>
       <div className="studio-open__chat-bubble">
         {message.text ? <p>{message.text}</p> : null}
-        {message.attachment ? (
-          <a
-            className="studio-open__chat-attachment-card"
-            href={message.attachment.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <strong>{message.attachment.originalName}</strong>
-            <span>{Math.ceil(message.attachment.size / 1024)} KB</span>
-          </a>
-        ) : null}
         {timeStr ? <span className="studio-open__chat-bubble-time">{timeStr}</span> : null}
       </div>
     </div>

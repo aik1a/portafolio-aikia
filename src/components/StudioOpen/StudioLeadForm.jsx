@@ -30,7 +30,7 @@ export default function StudioLeadForm({ lead, errors, onChange, onContinue }) {
         {errors.message ? <p className="studio-open__field-error">{studioCopy.lead.messageError}</p> : null}
       </div>
       <button className="studio-open__btn studio-open__btn--primary studio-open__btn--full" type="button" onClick={onContinue}>
-        <StudioSymbol name="paperclip" />
+        <StudioSymbol name="mail" />
         Continuar
       </button>
     </div>

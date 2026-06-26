@@ -3,7 +3,6 @@ import ChatAliasForm from './ChatAliasForm';
 import ChatMessageInput from './ChatMessageInput';
 import ChatMessageList from './ChatMessageList';
 import ChatRoomSelector from './ChatRoomSelector';
-import ChatSearch from './ChatSearch';
 
 export default function StudioChat({ chat }) {
   if (!chat.alias) {
@@ -39,22 +38,13 @@ export default function StudioChat({ chat }) {
         />
       </div>
 
-      <div className="studio-open__chat-search-container">
-        <ChatSearch searchQuery={chat.searchQuery} onSearchChange={chat.setSearchQuery} />
-      </div>
-
       <ChatMessageList
         messages={chat.filteredMessages}
         currentUserAlias={chat.alias}
-        onLoadMore={chat.onLoadMore}
-        isLoadingMore={chat.isLoadingMore}
-        hasMore={chat.hasMore}
-        emptyText={chat.hasSearch ? 'No hay resultados en esta sala.' : undefined}
       />
 
       <ChatMessageInput
         onSendMessage={chat.onSendMessage}
-        onUploadFile={chat.onUploadFile}
         isMuted={chat.isMuted}
         onToggleSound={chat.onToggleSound}
       />
